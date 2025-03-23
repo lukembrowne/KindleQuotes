@@ -1,17 +1,106 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, useColorScheme } from 'react-native';
+import DateTimePicker from '@react-native-community/datetimepicker';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+const COLORS = {
+  light: {
+    primary: '#2DD4BF',
+    primaryDark: '#0D9488',
+    text: '#333333',
+    textLight: '#666666',
+    textLighter: '#999999',
+    background: '#FFFFFF',
+    cardBackground: '#F8FAFC',
+    buttonText: '#FFFFFF',
+  },
+  dark: {
+    primary: '#2DD4BF',
+    primaryDark: '#0D9488',
+    text: '#E5E7EB',
+    textLight: '#9CA3AF',
+    textLighter: '#6B7280',
+    background: '#1F2937',
+    cardBackground: '#374151',
+    buttonText: '#FFFFFF',
+  },
+};
+
+const NOTIFICATION_TIME_KEY = 'notificationTime';
 
 const SettingsScreen = ({ navigation }) => {
+  const colorScheme = useColorScheme();
+  const colors = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
+  const [notificationTime, setNotificationTime] = useState(new Date());
+  const [showTimePicker, setShowTimePicker] = useState(false);
+
+  useEffect(() => {
+    loadNotificationTime();
+  }, []);
+
+  const loadNotificationTime = async () => {
+    try {
+      const savedTime = await AsyncStorage.getItem(NOTIFICATION_TIME_KEY);
+      if (savedTime) {
+        setNotificationTime(new Date(savedTime));
+      } else {
+        // Set default time to 2:00 PM
+        const defaultTime = new Date();
+        defaultTime.setHours(14, 0, 0, 0);
+        setNotificationTime(defaultTime);
+        await AsyncStorage.setItem(NOTIFICATION_TIME_KEY, defaultTime.toISOString());
+      }
+    } catch (error) {
+      console.error('Error loading notification time:', error);
+    }
+  };
+
+  const handleTimeChange = async (event, selectedTime) => {
+    setShowTimePicker(false);
+    if (selectedTime) {
+      setNotificationTime(selectedTime);
+      try {
+        await AsyncStorage.setItem(NOTIFICATION_TIME_KEY, selectedTime.toISOString());
+      } catch (error) {
+        console.error('Error saving notification time:', error);
+      }
+    }
+  };
+
+  const showTimePickerModal = () => {
+    setShowTimePicker(true);
+  };
+
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>Settings Screen</Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={() => navigation.navigate('AllQuotes')}
-        >
-          <Text style={styles.buttonText}>View All Quotes</Text>
-        </TouchableOpacity>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
+        <Text style={[styles.title, { color: colors.text }]}>Notification Settings</Text>
+        
+        <View style={styles.timeContainer}>
+          <Text style={[styles.label, { color: colors.text }]}>Daily Notification Time</Text>
+          <TouchableOpacity 
+            style={[styles.timeButton, { backgroundColor: colors.primary }]}
+            onPress={showTimePickerModal}
+          >
+            <Text style={[styles.timeButtonText, { color: colors.buttonText }]}>
+              {notificationTime.toLocaleTimeString('en-US', {
+                hour: 'numeric',
+                minute: '2-digit',
+                hour12: true
+              })}
+            </Text>
+          </TouchableOpacity>
+        </View>
+
+        {showTimePicker && (
+          <DateTimePicker
+            value={notificationTime}
+            mode="time"
+            is24Hour={false}
+            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+            onChange={handleTimeChange}
+          />
+        )}
       </View>
     </View>
   );
@@ -20,27 +109,39 @@ const SettingsScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
     padding: 20,
   },
-  text: {
+  card: {
+    padding: 20,
+    borderRadius: 12,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  title: {
     fontSize: 24,
-    marginBottom: 30,
+    fontWeight: 'bold',
+    marginBottom: 20,
   },
-  buttonContainer: {
-    width: '100%',
-    gap: 15,
+  timeContainer: {
+    marginBottom: 20,
   },
-  button: {
-    backgroundColor: '#f4511e',
+  label: {
+    fontSize: 16,
+    marginBottom: 10,
+  },
+  timeButton: {
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
+  timeButtonText: {
+    fontSize: 18,
     fontWeight: 'bold',
   },
 });
