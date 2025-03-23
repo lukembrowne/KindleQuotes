@@ -1,9 +1,6 @@
 import quotesData from '../assets/quotes.json';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-
-const QUOTE_DATE_KEY = 'quoteOfTheDayDate';
-const QUOTE_INDEX_KEY = 'quoteOfTheDayIndex';
-const MAX_RETRIES = 3;
+import { STORAGE_KEYS, MAX_RETRIES } from './constants';
 
 /**
  * Loads and parses the quotes from the bundled JSON file
@@ -57,8 +54,8 @@ export const getDailyQuote = async () => {
     }
 
     // Get stored date and index
-    const storedDate = await AsyncStorage.getItem(QUOTE_DATE_KEY);
-    const storedIndex = await AsyncStorage.getItem(QUOTE_INDEX_KEY);
+    const storedDate = await AsyncStorage.getItem(STORAGE_KEYS.QUOTE_DATE);
+    const storedIndex = await AsyncStorage.getItem(STORAGE_KEYS.QUOTE_INDEX);
     const today = new Date().toDateString();
 
     // If we have a stored quote for today, validate and return it
@@ -88,8 +85,8 @@ export const getDailyQuote = async () => {
     }
 
     // Save the new selection
-    await AsyncStorage.setItem(QUOTE_DATE_KEY, today);
-    await AsyncStorage.setItem(QUOTE_INDEX_KEY, selectedIndex.toString());
+    await AsyncStorage.setItem(STORAGE_KEYS.QUOTE_DATE, today);
+    await AsyncStorage.setItem(STORAGE_KEYS.QUOTE_INDEX, selectedIndex.toString());
 
     return selectedQuote;
   } catch (error) {

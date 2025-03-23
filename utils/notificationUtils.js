@@ -2,8 +2,13 @@ import * as Notifications from 'expo-notifications';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { getDailyQuote } from './quoteUtils';
 import { Alert } from 'react-native';
-
-const NOTIFICATION_TIME_KEY = 'notificationTime';
+import { 
+  STORAGE_KEYS, 
+  MAX_NOTIFICATION_LENGTH,
+  DEFAULT_NOTIFICATION_HOUR,
+  DEFAULT_NOTIFICATION_MINUTE,
+  COLORS 
+} from './constants';
 
 // Configure notification behavior
 Notifications.setNotificationHandler({
@@ -34,9 +39,8 @@ const showToast = (message, type = 'error') => {
  * @returns {string} Truncated quote with ellipsis if needed
  */
 const truncateQuote = (quote) => {
-  const MAX_LENGTH = 100;
-  if (quote.length <= MAX_LENGTH) return quote;
-  return quote.substring(0, MAX_LENGTH - 3) + '...';
+  if (quote.length <= MAX_NOTIFICATION_LENGTH) return quote;
+  return quote.substring(0, MAX_NOTIFICATION_LENGTH - 3) + '...';
 };
 
 /**
@@ -111,12 +115,12 @@ export const initializeNotifications = async () => {
     const quote = await getDailyQuote();
 
     // Get notification time from storage or use default
-    const savedTime = await AsyncStorage.getItem(NOTIFICATION_TIME_KEY);
+    const savedTime = await AsyncStorage.getItem(STORAGE_KEYS.NOTIFICATION_TIME);
     const notificationTime = savedTime 
       ? new Date(savedTime)
       : (() => {
           const defaultTime = new Date();
-          defaultTime.setHours(14, 0, 0, 0); // 2:00 PM
+          defaultTime.setHours(DEFAULT_NOTIFICATION_HOUR, DEFAULT_NOTIFICATION_MINUTE, 0, 0);
           return defaultTime;
         })();
 
