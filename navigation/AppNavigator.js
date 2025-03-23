@@ -4,6 +4,12 @@ import HomeScreen from '../screens/HomeScreen';
 import AllQuotesScreen from '../screens/AllQuotesScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
+const COLORS = {
+  primary: '#2DD4BF', // Turquoise
+  primaryDark: '#0D9488', // Darker turquoise for hover/press states
+  background: '#FFFFFF',
+};
+
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
@@ -12,12 +18,13 @@ const AppNavigator = () => {
       initialRouteName="Home"
       screenOptions={{
         headerStyle: {
-          backgroundColor: '#f4511e',
+          backgroundColor: COLORS.primary,
         },
         headerTintColor: '#fff',
         headerTitleStyle: {
           fontWeight: 'bold',
         },
+        headerShadowVisible: false,
       }}
     >
       <Stack.Screen 
