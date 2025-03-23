@@ -3,6 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const QUOTE_DATE_KEY = 'quoteOfTheDayDate';
 const QUOTE_INDEX_KEY = 'quoteOfTheDayIndex';
+const MAX_RETRIES = 3;
 
 /**
  * Loads and parses the quotes from the bundled JSON file
@@ -13,6 +14,9 @@ export const loadQuotes = () => {
   try {
     if (!quotesData || !Array.isArray(quotesData)) {
       throw new Error('Invalid quotes data format');
+    }
+    if (quotesData.length === 0) {
+      throw new Error('No quotes available in the database');
     }
     return quotesData;
   } catch (error) {
@@ -28,6 +32,16 @@ export const loadQuotes = () => {
  */
 const getRandomQuoteIndex = (max) => {
   return Math.floor(Math.random() * max);
+};
+
+/**
+ * Validates a quote index
+ * @param {number} index - The index to validate
+ * @param {Array} quotes - The quotes array
+ * @returns {boolean} Whether the index is valid
+ */
+const isValidQuoteIndex = (index, quotes) => {
+  return index >= 0 && index < quotes.length;
 };
 
 /**
@@ -47,24 +61,39 @@ export const getDailyQuote = async () => {
     const storedIndex = await AsyncStorage.getItem(QUOTE_INDEX_KEY);
     const today = new Date().toDateString();
 
-    // If we have a stored quote for today, return it
+    // If we have a stored quote for today, validate and return it
     if (storedDate === today && storedIndex !== null) {
       const index = parseInt(storedIndex, 10);
-      if (index >= 0 && index < quotes.length) {
+      if (isValidQuoteIndex(index, quotes)) {
         return quotes[index];
       }
     }
 
-    // Select a new quote for today
-    const newIndex = getRandomQuoteIndex(quotes.length);
-    
+    // If we don't have a valid stored quote, select a new one
+    let attempts = 0;
+    let selectedIndex;
+    let selectedQuote;
+
+    while (attempts < MAX_RETRIES) {
+      selectedIndex = getRandomQuoteIndex(quotes.length);
+      if (isValidQuoteIndex(selectedIndex, quotes)) {
+        selectedQuote = quotes[selectedIndex];
+        break;
+      }
+      attempts++;
+    }
+
+    if (!selectedQuote) {
+      throw new Error('Failed to select a valid quote after multiple attempts');
+    }
+
     // Save the new selection
     await AsyncStorage.setItem(QUOTE_DATE_KEY, today);
-    await AsyncStorage.setItem(QUOTE_INDEX_KEY, newIndex.toString());
+    await AsyncStorage.setItem(QUOTE_INDEX_KEY, selectedIndex.toString());
 
-    return quotes[newIndex];
+    return selectedQuote;
   } catch (error) {
-    console.error('Error getting daily quote:', error);
-    throw new Error('Failed to get daily quote. Please try again later.');
+    console.error('Error in getDailyQuote:', error);
+    throw new Error('Unable to get your daily quote. Please try again later.');
   }
 }; 

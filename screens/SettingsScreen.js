@@ -1,7 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, useColorScheme } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, useColorScheme, Alert } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { updateNotificationTime } from '../utils/notificationUtils';
 
 const COLORS = {
   light: {
@@ -52,6 +53,7 @@ const SettingsScreen = ({ navigation }) => {
       }
     } catch (error) {
       console.error('Error loading notification time:', error);
+      Alert.alert('Error', 'Failed to load notification time settings');
     }
   };
 
@@ -61,8 +63,11 @@ const SettingsScreen = ({ navigation }) => {
       setNotificationTime(selectedTime);
       try {
         await AsyncStorage.setItem(NOTIFICATION_TIME_KEY, selectedTime.toISOString());
+        await updateNotificationTime(selectedTime);
+        Alert.alert('Success', 'Notification time updated successfully');
       } catch (error) {
         console.error('Error saving notification time:', error);
+        Alert.alert('Error', 'Failed to update notification time');
       }
     }
   };
