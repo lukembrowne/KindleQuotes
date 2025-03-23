@@ -1,30 +1,46 @@
 import React from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { useColorScheme } from 'react-native';
 import HomeScreen from '../screens/HomeScreen';
 import AllQuotesScreen from '../screens/AllQuotesScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 
 const COLORS = {
-  primary: '#2DD4BF', // Turquoise
-  primaryDark: '#0D9488', // Darker turquoise for hover/press states
-  background: '#FFFFFF',
+  light: {
+    primary: '#2DD4BF', // Turquoise
+    primaryDark: '#0D9488', // Darker turquoise for hover/press states
+    background: '#FFFFFF',
+    headerText: '#FFFFFF',
+  },
+  dark: {
+    primary: '#2DD4BF',
+    primaryDark: '#0D9488',
+    background: '#1F2937',
+    headerText: '#FFFFFF',
+  },
 };
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
+  const colorScheme = useColorScheme();
+  const colors = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
+
   return (
     <Stack.Navigator
       initialRouteName="Home"
       screenOptions={{
         headerStyle: {
-          backgroundColor: COLORS.primary,
+          backgroundColor: colors.primary,
         },
-        headerTintColor: '#fff',
+        headerTintColor: colors.headerText,
         headerTitleStyle: {
           fontWeight: 'bold',
         },
         headerShadowVisible: false,
+        contentStyle: {
+          backgroundColor: colors.background,
+        },
       }}
     >
       <Stack.Screen 

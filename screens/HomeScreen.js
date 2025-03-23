@@ -1,18 +1,35 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native';
 import { getDailyQuote } from '../utils/quoteUtils';
 
 const COLORS = {
-  primary: '#2DD4BF', // Turquoise
-  primaryDark: '#0D9488', // Darker turquoise for hover/press states
-  text: '#333333',
-  textLight: '#666666',
-  textLighter: '#999999',
-  background: '#FFFFFF',
-  cardBackground: '#F8FAFC', // Light blue-gray
+  light: {
+    primary: '#2DD4BF',
+    primaryDark: '#0D9488',
+    text: '#333333',
+    textLight: '#666666',
+    textLighter: '#999999',
+    background: '#FFFFFF',
+    cardBackground: '#F8FAFC',
+    buttonText: '#FFFFFF',
+    error: '#EF4444',
+  },
+  dark: {
+    primary: '#2DD4BF',
+    primaryDark: '#0D9488',
+    text: '#E5E7EB',
+    textLight: '#9CA3AF',
+    textLighter: '#6B7280',
+    background: '#1F2937',
+    cardBackground: '#374151',
+    buttonText: '#FFFFFF',
+    error: '#F87171',
+  },
 };
 
 const HomeScreen = ({ navigation }) => {
+  const colorScheme = useColorScheme();
+  const colors = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
   const [dailyQuote, setDailyQuote] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -35,26 +52,26 @@ const HomeScreen = ({ navigation }) => {
   }, []);
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Quote of the Day</Text>
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <Text style={[styles.title, { color: colors.primary }]}>Quote of the Day</Text>
       
       {loading ? (
-        <ActivityIndicator size="large" color={COLORS.primary} />
+        <ActivityIndicator size="large" color={colors.primary} />
       ) : error ? (
-        <Text style={styles.errorText}>{error}</Text>
+        <Text style={[styles.errorText, { color: colors.error }]}>{error}</Text>
       ) : dailyQuote ? (
         <View style={styles.quoteContainer}>
-          <View style={styles.quoteCard}>
-            <Text style={styles.quoteText}>
+          <View style={[styles.quoteCard, { backgroundColor: colors.cardBackground }]}>
+            <Text style={[styles.quoteText, { color: colors.text }]}>
               "{dailyQuote.Content}"
             </Text>
-            <Text style={styles.quoteAuthor}>
+            <Text style={[styles.quoteAuthor, { color: colors.text }]}>
               - {dailyQuote.BookAuthor}
             </Text>
-            <Text style={styles.quoteBook}>
+            <Text style={[styles.quoteBook, { color: colors.textLight }]}>
               {dailyQuote.BookTitle}
             </Text>
-            <Text style={styles.quoteDate}>
+            <Text style={[styles.quoteDate, { color: colors.textLighter }]}>
               {new Date(dailyQuote.CreatedKindle).toLocaleDateString('en-US', {
                 year: 'numeric',
                 month: 'long',
@@ -67,16 +84,16 @@ const HomeScreen = ({ navigation }) => {
 
       <View style={styles.buttonContainer}>
         <TouchableOpacity 
-          style={styles.button}
+          style={[styles.button, { backgroundColor: colors.primary }]}
           onPress={() => navigation.navigate('AllQuotes')}
         >
-          <Text style={styles.buttonText}>View All Quotes</Text>
+          <Text style={[styles.buttonText, { color: colors.buttonText }]}>View All Quotes</Text>
         </TouchableOpacity>
         <TouchableOpacity 
-          style={styles.button}
+          style={[styles.button, { backgroundColor: colors.primary }]}
           onPress={() => navigation.navigate('Settings')}
         >
-          <Text style={styles.buttonText}>Settings</Text>
+          <Text style={[styles.buttonText, { color: colors.buttonText }]}>Settings</Text>
         </TouchableOpacity>
       </View>
     </View>
@@ -89,13 +106,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     padding: 20,
-    backgroundColor: COLORS.background,
   },
   title: {
     fontSize: 28,
     fontWeight: 'bold',
     marginBottom: 30,
-    color: COLORS.primary,
   },
   buttonContainer: {
     width: '100%',
@@ -103,13 +118,11 @@ const styles = StyleSheet.create({
     marginTop: 30,
   },
   button: {
-    backgroundColor: COLORS.primary,
     padding: 15,
     borderRadius: 8,
     alignItems: 'center',
   },
   buttonText: {
-    color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
   },
@@ -119,7 +132,6 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   quoteCard: {
-    backgroundColor: COLORS.cardBackground,
     padding: 20,
     borderRadius: 12,
     width: '100%',
@@ -137,25 +149,20 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     marginBottom: 15,
     lineHeight: 24,
-    color: COLORS.text,
   },
   quoteAuthor: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
-    color: COLORS.text,
   },
   quoteBook: {
     fontSize: 14,
-    color: COLORS.textLight,
     marginBottom: 10,
   },
   quoteDate: {
     fontSize: 12,
-    color: COLORS.textLighter,
   },
   errorText: {
-    color: '#EF4444', // Keeping error red for visibility
     textAlign: 'center',
     marginBottom: 20,
   },

@@ -1,18 +1,106 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text, StyleSheet, FlatList, ActivityIndicator, useColorScheme } from 'react-native';
+import { loadQuotes } from '../utils/quoteUtils';
+
+const COLORS = {
+  light: {
+    primary: '#2DD4BF',
+    primaryDark: '#0D9488',
+    text: '#333333',
+    textLight: '#666666',
+    textLighter: '#999999',
+    background: '#FFFFFF',
+    cardBackground: '#F8FAFC',
+    separator: '#E5E7EB',
+  },
+  dark: {
+    primary: '#2DD4BF',
+    primaryDark: '#0D9488',
+    text: '#E5E7EB',
+    textLight: '#9CA3AF',
+    textLighter: '#6B7280',
+    background: '#1F2937',
+    cardBackground: '#374151',
+    separator: '#4B5563',
+  },
+};
+
+const QuoteItem = ({ quote, colors }) => (
+  <View style={[styles.quoteCard, { backgroundColor: colors.cardBackground }]}>
+    <Text style={[styles.quoteText, { color: colors.text }]}>
+      "{quote.Content}"
+    </Text>
+    <Text style={[styles.quoteAuthor, { color: colors.text }]}>
+      - {quote.BookAuthor}
+    </Text>
+    <Text style={[styles.quoteBook, { color: colors.textLight }]}>
+      {quote.BookTitle}
+    </Text>
+    <Text style={[styles.quoteDate, { color: colors.textLighter }]}>
+      {new Date(quote.CreatedKindle).toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric'
+      })}
+    </Text>
+  </View>
+);
 
 const AllQuotesScreen = ({ navigation }) => {
-  return (
-    <View style={styles.container}>
-      <Text style={styles.text}>All Quotes Screen</Text>
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={styles.button}
-          onPress={() => navigation.navigate('Settings')}
-        >
-          <Text style={styles.buttonText}>Settings</Text>
-        </TouchableOpacity>
+  const colorScheme = useColorScheme();
+  const colors = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
+  const [quotes, setQuotes] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchQuotes = async () => {
+      try {
+        const loadedQuotes = loadQuotes();
+        // Sort quotes alphabetically by BookTitle
+        const sortedQuotes = [...loadedQuotes].sort((a, b) => 
+          a.BookTitle.localeCompare(b.BookTitle)
+        );
+        setQuotes(sortedQuotes);
+        setError(null);
+      } catch (err) {
+        setError(err.message);
+        console.error('Error loading quotes:', err);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchQuotes();
+  }, []);
+
+  if (loading) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
+    );
+  }
+
+  if (error) {
+    return (
+      <View style={[styles.container, { backgroundColor: colors.background }]}>
+        <Text style={[styles.errorText, { color: colors.text }]}>{error}</Text>
+      </View>
+    );
+  }
+
+  return (
+    <View style={[styles.container, { backgroundColor: colors.background }]}>
+      <FlatList
+        data={quotes}
+        renderItem={({ item }) => <QuoteItem quote={item} colors={colors} />}
+        keyExtractor={(item, index) => `${item.BookTitle}-${index}`}
+        contentContainerStyle={styles.listContent}
+        ItemSeparatorComponent={() => (
+          <View style={[styles.separator, { backgroundColor: colors.separator }]} />
+        )}
+      />
     </View>
   );
 };
@@ -20,28 +108,49 @@ const AllQuotesScreen = ({ navigation }) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  },
+  listContent: {
+    padding: 16,
+  },
+  quoteCard: {
     padding: 20,
+    borderRadius: 12,
+    marginBottom: 16,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
   },
-  text: {
-    fontSize: 24,
-    marginBottom: 30,
+  quoteText: {
+    fontSize: 18,
+    fontStyle: 'italic',
+    marginBottom: 15,
+    lineHeight: 24,
   },
-  buttonContainer: {
-    width: '100%',
-    gap: 15,
-  },
-  button: {
-    backgroundColor: '#f4511e',
-    padding: 15,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  buttonText: {
-    color: '#fff',
+  quoteAuthor: {
     fontSize: 16,
     fontWeight: 'bold',
+    marginBottom: 5,
+  },
+  quoteBook: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  quoteDate: {
+    fontSize: 12,
+  },
+  separator: {
+    height: 1,
+    marginVertical: 8,
+  },
+  errorText: {
+    fontSize: 16,
+    textAlign: 'center',
+    margin: 20,
   },
 });
 
