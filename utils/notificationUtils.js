@@ -56,15 +56,19 @@ export const scheduleDailyNotification = async (notificationTime, quote) => {
 
     // Create the notification content
     const content = {
-      title: 'Your Daily Kindle Quote',
+      title: 'Your Daily Quote',
       body: truncateQuote(quote.Content),
       data: { quoteId: quote.id }, // Store quote ID for reference
     };
 
     // Schedule the notification
+    console.log('Scheduling notification at:', notificationTime);
+    console.log('Notification hours:', notificationTime.getHours());
+    console.log('Notification minutes:', notificationTime.getMinutes());
     await Notifications.scheduleNotificationAsync({
       content,
       trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.DAILY,
         hour: notificationTime.getHours(),
         minute: notificationTime.getMinutes(),
         repeats: true, // Enable daily repetition
@@ -72,6 +76,22 @@ export const scheduleDailyNotification = async (notificationTime, quote) => {
     });
 
     console.log('Daily notification scheduled successfully');
+
+    console.log("Next scheduled notification:", await Notifications.getAllScheduledNotificationsAsync());
+
+    // Testing
+    Notifications.scheduleNotificationAsync({
+      content,
+      trigger: {
+        type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
+        seconds: 60 * 60,
+        repeats: true,
+      },
+    });
+
+    console.log("Next scheduled notification:", await Notifications.getAllScheduledNotificationsAsync());
+
+
   } catch (error) {
     console.warn('Error scheduling notification:', error);
     showToast('Failed to schedule daily notification. Please check your notification settings.');
@@ -110,10 +130,10 @@ export const initializeNotifications = async () => {
       console.log('Notification permissions not granted');
       return;
     }
-
     // Get the current daily quote
+    console.log('Getting daily quote in initializeNotifications');
     const quote = await getDailyQuote();
-
+    console.log('Daily quote:', quote);
     // Get notification time from storage or use default
     const savedTime = await AsyncStorage.getItem(STORAGE_KEYS.NOTIFICATION_TIME);
     const notificationTime = savedTime 

@@ -41,11 +41,11 @@ const HomeScreen = ({ navigation }) => {
             <Text style={[styles.quoteText, { color: colors.text }]}>
               "{dailyQuote.Content}"
             </Text>
-            <Text style={[styles.quoteAuthor, { color: colors.text }]}>
-              - {dailyQuote.BookAuthor}
-            </Text>
-            <Text style={[styles.quoteBook, { color: colors.textLight }]}>
+            <Text style={[styles.quoteBook, { color: colors.text }]}>
               {dailyQuote.BookTitle}
+            </Text>
+            <Text style={[styles.quoteAuthor, { color: colors.textLight }]}>
+              by {dailyQuote.BookAuthor}
             </Text>
             <Text style={[styles.quoteDate, { color: colors.textLighter }]}>
               {new Date(dailyQuote.CreatedKindle).toLocaleDateString('en-US', {
@@ -126,12 +126,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     lineHeight: 24,
   },
-  quoteAuthor: {
+  quoteBook: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  quoteBook: {
+  quoteAuthor: {
     fontSize: 14,
     marginBottom: 10,
   },

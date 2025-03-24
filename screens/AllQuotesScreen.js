@@ -8,11 +8,11 @@ const QuoteItem = ({ quote, colors }) => (
     <Text style={[styles.quoteText, { color: colors.text }]}>
       "{quote.Content}"
     </Text>
-    <Text style={[styles.quoteAuthor, { color: colors.text }]}>
-      - {quote.BookAuthor}
-    </Text>
-    <Text style={[styles.quoteBook, { color: colors.textLight }]}>
+    <Text style={[styles.quoteBook, { color: colors.text }]}>
       {quote.BookTitle}
+    </Text>
+    <Text style={[styles.quoteAuthor, { color: colors.textLight }]}>
+      by {quote.BookAuthor}
     </Text>
     <Text style={[styles.quoteDate, { color: colors.textLighter }]}>
       {new Date(quote.CreatedKindle).toLocaleDateString('en-US', {
@@ -109,12 +109,12 @@ const styles = StyleSheet.create({
     marginBottom: 15,
     lineHeight: 24,
   },
-  quoteAuthor: {
+  quoteBook: {
     fontSize: 16,
     fontWeight: 'bold',
     marginBottom: 5,
   },
-  quoteBook: {
+  quoteAuthor: {
     fontSize: 14,
     marginBottom: 10,
   },

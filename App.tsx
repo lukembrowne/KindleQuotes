@@ -5,6 +5,7 @@ import { initializeNotifications } from './utils/notificationUtils';
 
 export default function App() {
   useEffect(() => {
+    console.log('Initializing notifications');
     initializeNotifications();
   }, []);
 
