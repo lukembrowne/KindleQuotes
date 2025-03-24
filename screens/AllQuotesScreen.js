@@ -1,29 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, FlatList, ActivityIndicator, useColorScheme } from 'react-native';
 import { loadQuotes } from '../utils/quoteUtils';
-
-const COLORS = {
-  light: {
-    primary: '#2DD4BF',
-    primaryDark: '#0D9488',
-    text: '#333333',
-    textLight: '#666666',
-    textLighter: '#999999',
-    background: '#FFFFFF',
-    cardBackground: '#F8FAFC',
-    separator: '#E5E7EB',
-  },
-  dark: {
-    primary: '#2DD4BF',
-    primaryDark: '#0D9488',
-    text: '#E5E7EB',
-    textLight: '#9CA3AF',
-    textLighter: '#6B7280',
-    background: '#1F2937',
-    cardBackground: '#374151',
-    separator: '#4B5563',
-  },
-};
+import { COLORS } from '../utils/constants';
 
 const QuoteItem = ({ quote, colors }) => (
   <View style={[styles.quoteCard, { backgroundColor: colors.cardBackground }]}>

@@ -1,31 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native';
 import { getDailyQuote } from '../utils/quoteUtils';
-
-const COLORS = {
-  light: {
-    primary: '#2DD4BF',
-    primaryDark: '#0D9488',
-    text: '#333333',
-    textLight: '#666666',
-    textLighter: '#999999',
-    background: '#FFFFFF',
-    cardBackground: '#F8FAFC',
-    buttonText: '#FFFFFF',
-    error: '#EF4444',
-  },
-  dark: {
-    primary: '#2DD4BF',
-    primaryDark: '#0D9488',
-    text: '#E5E7EB',
-    textLight: '#9CA3AF',
-    textLighter: '#6B7280',
-    background: '#1F2937',
-    cardBackground: '#374151',
-    buttonText: '#FFFFFF',
-    error: '#F87171',
-  },
-};
+import { COLORS } from '../utils/constants';
 
 const HomeScreen = ({ navigation }) => {
   const colorScheme = useColorScheme();
