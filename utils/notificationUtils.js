@@ -191,9 +191,13 @@ export const scheduleMultipleNotifications = async (startTime, intervalSeconds =
       console.log(`- Quote: "${quotes[i].Content.substring(0, 50)}..."`);
       
       const content = {
-        title: `Quote #${i + 1}`,
+        title: `Kindle Quote #${i + 1}`,
         body: truncateQuote(quotes[i].Content),
-        data: { quoteId: quotes[i].id },
+        data: { 
+          quoteId: quotes[i].id,
+          screen: 'Home',
+          quote: quotes[i].Content
+        },
       };
 
       await Notifications.scheduleNotificationAsync({
@@ -234,7 +238,7 @@ export const initializeNotifications = async () => {
 
     // Schedule notifications starting 1 minute from now
     const startTime = new Date();
-    startTime.setMinutes(startTime.getMinutes() + 1);
+    startTime.setSeconds(startTime.getSeconds() + 10);
     console.log('Scheduling notifications to start at:', startTime.toISOString());
     
     await scheduleMultipleNotifications(startTime);

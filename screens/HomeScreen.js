@@ -2,8 +2,9 @@ import React, { useEffect, useState } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ActivityIndicator, useColorScheme } from 'react-native';
 import { getDailyQuote } from '../utils/quoteUtils';
 import { COLORS } from '../utils/constants';
+import { loadQuotes } from '../utils/quoteUtils';
 
-const HomeScreen = ({ navigation }) => {
+const HomeScreen = ({ navigation, route }) => {
   const colorScheme = useColorScheme();
   const colors = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
   const [dailyQuote, setDailyQuote] = useState(null);
@@ -11,8 +12,37 @@ const HomeScreen = ({ navigation }) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchDailyQuote = async () => {
+    const fetchQuote = async () => {
+      console.log('Fetching quote...');
       try {
+        // If we have a quote from the notification, use that
+        if (route.params?.quoteId) {
+          console.log('Notification quote ID received:', route.params.quoteId);
+          const allQuotes = loadQuotes();
+          console.log('Total quotes loaded:', allQuotes.length);
+          const notificationQuote = allQuotes.find(q => q.id === route.params.quoteId);
+          console.log('Found notification quote:', notificationQuote ? 'Yes' : 'No');
+          if (notificationQuote) {
+            console.log('Setting quote from notification:', notificationQuote.Content.substring(0, 50) + '...');
+            setDailyQuote(notificationQuote);
+            setLoading(false);
+            return;
+          }
+        } else if (route.params?.quote) {
+          // If we have the quote content directly from notification
+          console.log('Direct quote received from notification');
+          const allQuotes = loadQuotes();
+          const notificationQuote = allQuotes.find(q => q.Content === route.params.quote);
+          if (notificationQuote) {
+            console.log('Found matching quote:', notificationQuote.Content.substring(0, 50) + '...');
+            setDailyQuote(notificationQuote);
+            setLoading(false);
+            return;
+          }
+        }
+        
+        // Otherwise, get the daily quote
+        console.log('No notification quote found, getting daily quote');
         const quote = await getDailyQuote();
         setDailyQuote(quote);
         setError(null);
@@ -24,8 +54,8 @@ const HomeScreen = ({ navigation }) => {
       }
     };
 
-    fetchDailyQuote();
-  }, []);
+    fetchQuote();
+  }, [route.params?.quoteId, route.params?.quote]);
 
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
