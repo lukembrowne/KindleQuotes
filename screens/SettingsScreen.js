@@ -1,15 +1,17 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, useColorScheme, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, useColorScheme, Alert, ScrollView } from 'react-native';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateNotificationTime } from '../utils/notificationUtils';
 import { COLORS, STORAGE_KEYS } from '../utils/constants';
+import * as Notifications from 'expo-notifications';
 
 const SettingsScreen = ({ navigation }) => {
   const colorScheme = useColorScheme();
   const colors = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
   const [notificationTime, setNotificationTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
+  const [scheduledNotification, setScheduledNotification] = useState('');
 
   useEffect(() => {
     loadNotificationTime();
@@ -52,6 +54,16 @@ const SettingsScreen = ({ navigation }) => {
     setShowTimePicker(true);
   };
 
+  const checkNextNotification = async () => {
+    try {
+      const notifications = await Notifications.getAllScheduledNotificationsAsync();
+      setScheduledNotification(JSON.stringify(notifications, null, 2));
+    } catch (error) {
+      console.error('Error checking notifications:', error);
+      setScheduledNotification('Error fetching notification data');
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
@@ -82,6 +94,27 @@ const SettingsScreen = ({ navigation }) => {
             onChange={handleTimeChange}
           />
         )}
+
+        <View style={styles.debugSection}>
+          <TouchableOpacity 
+            style={[styles.debugButton, { backgroundColor: colors.primary }]}
+            onPress={checkNextNotification}
+          >
+            <Text style={[styles.timeButtonText, { color: colors.buttonText }]}>
+              Check Next Notification
+            </Text>
+          </TouchableOpacity>
+          
+          {scheduledNotification ? (
+            <View style={styles.notificationInfo}>
+              <ScrollView style={styles.scrollView}>
+                <Text style={[styles.notificationText, { color: colors.text }]}>
+                  {scheduledNotification}
+                </Text>
+              </ScrollView>
+            </View>
+          ) : null}
+        </View>
       </View>
     </View>
   );
@@ -124,6 +157,32 @@ const styles = StyleSheet.create({
   timeButtonText: {
     fontSize: 18,
     fontWeight: 'bold',
+  },
+  debugSection: {
+    marginTop: 20,
+    padding: 10,
+    flex: 1,
+  },
+  debugButton: {
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  notificationInfo: {
+    padding: 10,
+    borderRadius: 8,
+    backgroundColor: '#f5f5f5',
+    flex: 1,
+    minHeight: 200,
+  },
+  scrollView: {
+    flex: 1,
+  },
+  notificationText: {
+    fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
+    fontSize: 12,
+    padding: 5,
   },
 });
 

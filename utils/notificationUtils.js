@@ -58,25 +58,27 @@ export const scheduleDailyNotification = async (notificationTime, quote) => {
     const content = {
       title: 'Your Daily Quote',
       body: truncateQuote(quote.Content),
-      data: { quoteId: quote.id }, // Store quote ID for reference
+      data: { quoteId: quote.id },
     };
 
-    // Schedule the notification
+    // Get the local timezone
+    const timeZone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    
     console.log('Scheduling notification at:', notificationTime);
-    console.log('Notification hours:', notificationTime.getHours());
-    console.log('Notification minutes:', notificationTime.getMinutes());
+    console.log('Using timezone:', timeZone);
+    
     await Notifications.scheduleNotificationAsync({
       content,
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.DAILY,
         hour: notificationTime.getHours(),
         minute: notificationTime.getMinutes(),
-        repeats: true, // Enable daily repetition
+        repeats: true,
+        timeZone: timeZone, // Explicitly set the timezone
       },
     });
 
     console.log('Daily notification scheduled successfully');
-
     console.log("Next scheduled notification:", await Notifications.getAllScheduledNotificationsAsync());
 
     // Testing
@@ -84,7 +86,7 @@ export const scheduleDailyNotification = async (notificationTime, quote) => {
       content,
       trigger: {
         type: Notifications.SchedulableTriggerInputTypes.TIME_INTERVAL,
-        seconds: 60 * 60,
+        seconds: 60 * 10, // every 10 minutes
         repeats: true,
       },
     });
