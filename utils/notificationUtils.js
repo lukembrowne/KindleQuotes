@@ -161,11 +161,10 @@ const getMultipleUniqueQuotes = async (count) => {
  * @param {number} count - The number of notifications to schedule
  * @returns {Promise<void>}
  */
-export const scheduleMultipleNotifications = async (startTime, intervalSeconds = 5, count = 25) => {
+export const scheduleMultipleNotifications = async (startTime, intervalSeconds = 5, count = 50) => {
   try {
     console.log('Starting to schedule multiple notifications...');
     console.log(`Start time: ${startTime.toISOString()}`);
-    console.log(`Interval: ${intervalSeconds} seconds`);
     console.log(`Number of notifications: ${count}`);
 
     // Cancel any existing notifications
@@ -185,9 +184,12 @@ export const scheduleMultipleNotifications = async (startTime, intervalSeconds =
     // Schedule multiple notifications
     console.log('Starting to schedule notifications...');
     for (let i = 0; i < count; i++) {
-      const notificationTime = new Date(startTime.getTime() + (i * intervalSeconds * 1000));
+      // Create a new date for each notification, incrementing by days
+      const notificationTime = new Date(startTime);
+      notificationTime.setDate(notificationTime.getDate() + i);
+      
       console.log(`\nScheduling notification #${i + 1}:`);
-      console.log(`- Time: ${notificationTime.toISOString()}`);
+      console.log(`- Date: ${notificationTime.toISOString()}`);
       console.log(`- Quote: "${quotes[i].Content.substring(0, 50)}..."`);
       
       const content = {
@@ -236,10 +238,32 @@ export const initializeNotifications = async () => {
       return;
     }
 
-    // Schedule notifications starting 1 minute from now
-    const startTime = new Date();
-    startTime.setSeconds(startTime.getSeconds() + 10);
+    // Get the saved notification time from settings
+    const savedTime = await AsyncStorage.getItem(STORAGE_KEYS.NOTIFICATION_TIME);
+    console.log('Saved time:', savedTime);
+    let startTime;
+    
+    if (savedTime) {
+      // Create a new date for today and set the hours/minutes from saved time
+      const savedDate = new Date(savedTime);
+      startTime = new Date();
+      startTime.setHours(savedDate.getHours(), savedDate.getMinutes(), 0, 0);
+    } else {
+      // Set default time to 2:00 PM
+      startTime = new Date();
+      startTime.setHours(14, 0, 0, 0);
+      await AsyncStorage.setItem(STORAGE_KEYS.NOTIFICATION_TIME, startTime.toISOString());
+    }
+
+    console.log('Original start time:', startTime);
+    // If the time has already passed today, schedule for tomorrow
+    if (startTime.getTime() < Date.now()) {
+      console.log('Time has already passed today, scheduling for tomorrow');
+      startTime.setDate(startTime.getDate() + 1);
+    }
+
     console.log('Scheduling notifications to start at:', startTime.toISOString());
+    console.log('Current time:', new Date().toISOString());
     
     await scheduleMultipleNotifications(startTime);
     
