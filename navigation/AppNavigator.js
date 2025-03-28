@@ -1,21 +1,40 @@
 import React from 'react';
-import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useColorScheme } from 'react-native';
 import HomeScreen from '../screens/HomeScreen';
 import AllQuotesScreen from '../screens/AllQuotesScreen';
 import SettingsScreen from '../screens/SettingsScreen';
 import { COLORS } from '../utils/constants';
+import { Ionicons } from '@expo/vector-icons';
 
-const Stack = createNativeStackNavigator();
+const Tab = createBottomTabNavigator();
 
 const AppNavigator = () => {
   const colorScheme = useColorScheme();
   const colors = COLORS[colorScheme === 'dark' ? 'dark' : 'light'];
 
   return (
-    <Stack.Navigator
-      initialRouteName="Home"
-      screenOptions={{
+    <Tab.Navigator
+      screenOptions={({ route }) => ({
+        tabBarIcon: ({ focused, color, size }) => {
+          let iconName;
+
+          if (route.name === 'Home') {
+            iconName = focused ? 'home' : 'home-outline';
+          } else if (route.name === 'AllQuotes') {
+            iconName = focused ? 'book' : 'book-outline';
+          } else if (route.name === 'Settings') {
+            iconName = focused ? 'settings' : 'settings-outline';
+          }
+
+          return <Ionicons name={iconName} size={size} color={color} />;
+        },
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textLight,
+        tabBarStyle: {
+          backgroundColor: colors.cardBackground,
+          borderTopColor: colors.separator,
+        },
         headerStyle: {
           backgroundColor: colors.primary,
         },
@@ -27,24 +46,24 @@ const AppNavigator = () => {
         contentStyle: {
           backgroundColor: colors.background,
         },
-      }}
+      })}
     >
-      <Stack.Screen 
+      <Tab.Screen 
         name="Home" 
         component={HomeScreen}
-        options={{ title: 'Kindle Quotes' }}
+        options={{ title: 'Daily Quote' }}
       />
-      <Stack.Screen 
+      <Tab.Screen 
         name="AllQuotes" 
         component={AllQuotesScreen}
         options={{ title: 'All Quotes' }}
       />
-      <Stack.Screen 
+      <Tab.Screen 
         name="Settings" 
         component={SettingsScreen}
         options={{ title: 'Settings' }}
       />
-    </Stack.Navigator>
+    </Tab.Navigator>
   );
 };
 

@@ -87,21 +87,6 @@ const HomeScreen = ({ navigation, route }) => {
           </View>
         </View>
       ) : null}
-
-      <View style={styles.buttonContainer}>
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: colors.primary }]}
-          onPress={() => navigation.navigate('AllQuotes')}
-        >
-          <Text style={[styles.buttonText, { color: colors.buttonText }]}>View All Quotes</Text>
-        </TouchableOpacity>
-        <TouchableOpacity 
-          style={[styles.button, { backgroundColor: colors.primary }]}
-          onPress={() => navigation.navigate('Settings')}
-        >
-          <Text style={[styles.buttonText, { color: colors.buttonText }]}>Settings</Text>
-        </TouchableOpacity>
-      </View>
     </View>
   );
 };
