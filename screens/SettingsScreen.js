@@ -3,8 +3,11 @@ import { View, Text, StyleSheet, TouchableOpacity, Platform, useColorScheme, Ale
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateNotificationTime } from '../utils/notificationUtils';
+import { importKindleHighlights } from '../utils/quoteUtils';
 import { COLORS, STORAGE_KEYS } from '../utils/constants';
 import * as Notifications from 'expo-notifications';
+import * as DocumentPicker from 'expo-document-picker';
+import * as FileSystem from 'expo-file-system';
 
 const SettingsScreen = ({ navigation }) => {
   const colorScheme = useColorScheme();
@@ -12,6 +15,7 @@ const SettingsScreen = ({ navigation }) => {
   const [notificationTime, setNotificationTime] = useState(new Date());
   const [showTimePicker, setShowTimePicker] = useState(false);
   const [scheduledNotification, setScheduledNotification] = useState('');
+  const [importing, setImporting] = useState(false);
 
   useEffect(() => {
     loadNotificationTime();
@@ -64,6 +68,32 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
 
+  const handleImport = async () => {
+    try {
+      const result = await DocumentPicker.getDocumentAsync({
+        type: 'text/plain',
+        copyToCacheDirectory: true,
+      });
+
+      if (result.canceled) {
+        return;
+      }
+
+      setImporting(true);
+      const fileContent = await FileSystem.readAsStringAsync(result.assets[0].uri);
+      const quotes = await importKindleHighlights(fileContent);
+      
+      Alert.alert(
+        'Success',
+        `Successfully imported ${quotes.length} quotes. The app will now use these quotes for notifications.`
+      );
+    } catch (error) {
+      Alert.alert('Error', error.message);
+    } finally {
+      setImporting(false);
+    }
+  };
+
   return (
     <View style={[styles.container, { backgroundColor: colors.background }]}>
       <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
@@ -94,6 +124,22 @@ const SettingsScreen = ({ navigation }) => {
             onChange={handleTimeChange}
           />
         )}
+
+        <View style={styles.importSection}>
+          <Text style={[styles.label, { color: colors.text }]}>Import Kindle Highlights</Text>
+          <Text style={[styles.helpText, { color: colors.textLight }]}>
+            Select a text file containing your Kindle highlights. Each highlight should be separated by "=========="
+          </Text>
+          <TouchableOpacity 
+            style={[styles.importButton, { backgroundColor: colors.primary }]}
+            onPress={handleImport}
+            disabled={importing}
+          >
+            <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+              {importing ? 'Importing...' : 'Select Highlights File'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
         <View style={styles.debugSection}>
           <TouchableOpacity 
@@ -156,6 +202,23 @@ const styles = StyleSheet.create({
   },
   timeButtonText: {
     fontSize: 18,
+    fontWeight: 'bold',
+  },
+  importSection: {
+    marginTop: 20,
+    marginBottom: 20,
+  },
+  helpText: {
+    fontSize: 14,
+    marginBottom: 10,
+  },
+  importButton: {
+    padding: 15,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  buttonText: {
+    fontSize: 16,
     fontWeight: 'bold',
   },
   debugSection: {

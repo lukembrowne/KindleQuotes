@@ -34,7 +34,7 @@ const AllQuotesScreen = ({ navigation }) => {
   useEffect(() => {
     const fetchQuotes = async () => {
       try {
-        const loadedQuotes = loadQuotes();
+        const loadedQuotes = await loadQuotes();
         // Sort quotes alphabetically by BookTitle
         const sortedQuotes = [...loadedQuotes].sort((a, b) => 
           a.BookTitle.localeCompare(b.BookTitle)

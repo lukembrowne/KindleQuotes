@@ -5,6 +5,7 @@ export const STORAGE_KEYS = {
   QUOTE_DATE: 'quoteOfTheDayDate',
   QUOTE_INDEX: 'quoteOfTheDayIndex',
   NOTIFICATION_TIME: 'notificationTime',
+  IMPORTED_QUOTES: 'importedQuotes',
 };
 
 /**
