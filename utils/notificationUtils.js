@@ -129,7 +129,7 @@ export const requestNotificationPermissions = async () => {
 const getMultipleUniqueQuotes = async (count) => {
   try {
     // Load all available quotes
-    const allQuotes = loadQuotes();
+    const allQuotes = await loadQuotes();
     
     if (allQuotes.length < count) {
       throw new Error(`Not enough unique quotes available. Need ${count}, but only have ${allQuotes.length}`);

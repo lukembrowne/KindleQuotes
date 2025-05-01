@@ -199,7 +199,7 @@ export const loadQuotes = async () => {
     }
     
     // Fall back to bundled quotes
-    const bundledQuotes = require('../data/quotes.json'); // Make sure this path is correct
+    const bundledQuotes = require('../assets/quotes.json'); // Make sure this path is correct
     if (!Array.isArray(bundledQuotes)) {
       throw new Error('Invalid bundled quotes format');
     }
