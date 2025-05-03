@@ -18,7 +18,7 @@ const HomeScreen = ({ navigation, route }) => {
         // If we have a quote from the notification, use that
         if (route.params?.quoteId) {
           console.log('Notification quote ID received:', route.params.quoteId);
-          const allQuotes = loadQuotes();
+          const allQuotes = await loadQuotes();
           console.log('Total quotes loaded:', allQuotes.length);
           const notificationQuote = allQuotes.find(q => q.id === route.params.quoteId);
           console.log('Found notification quote:', notificationQuote ? 'Yes' : 'No');
@@ -31,7 +31,7 @@ const HomeScreen = ({ navigation, route }) => {
         } else if (route.params?.quote) {
           // If we have the quote content directly from notification
           console.log('Direct quote received from notification');
-          const allQuotes = loadQuotes();
+          const allQuotes = await loadQuotes();
           const notificationQuote = allQuotes.find(q => q.Content === route.params.quote);
           if (notificationQuote) {
             console.log('Found matching quote:', notificationQuote.Content.substring(0, 50) + '...');

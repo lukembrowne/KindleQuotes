@@ -193,7 +193,7 @@ export const scheduleMultipleNotifications = async (startTime, intervalSeconds =
       console.log(`- Quote: "${quotes[i].Content.substring(0, 50)}..."`);
       
       const content = {
-        title: `Kindle Quote #${i + 1}`,
+        title: quotes[i].BookTitle,
         body: truncateQuote(quotes[i].Content),
         data: { 
           quoteId: quotes[i].id,
