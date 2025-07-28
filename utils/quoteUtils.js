@@ -158,11 +158,11 @@ export const importKindleHighlights = async (text) => {
     console.log('\nFirst 3 parsed quotes:');
     quotes.slice(0, 3).forEach((quote, index) => {
       console.log(`\nQuote ${index + 1}:`);
-      console.log('Text:', quote.text);
-      console.log('Book:', quote.book);
-      console.log('Author:', quote.author);
-      console.log('Location:', quote.location);
-      console.log('Date:', quote.date);
+      console.log('Content:', quote.Content);
+      console.log('BookTitle:', quote.BookTitle);
+      console.log('BookAuthor:', quote.BookAuthor);
+      console.log('Location:', quote.Location);
+      console.log('CreatedKindle:', quote.CreatedKindle);
     });
     
     // Store the imported quotes

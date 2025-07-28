@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, useColorScheme, Alert, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, useColorScheme, Alert, ScrollView, ActivityIndicator } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { updateNotificationTime } from '../utils/notificationUtils';
 import { importKindleHighlights } from '../utils/quoteUtils';
-import { COLORS, STORAGE_KEYS } from '../utils/constants';
+import { COLORS, STORAGE_KEYS, TYPOGRAPHY, SPACING, BORDER_RADIUS, SHADOWS } from '../utils/constants';
 import * as Notifications from 'expo-notifications';
 import * as DocumentPicker from 'expo-document-picker';
 import * as FileSystem from 'expo-file-system';
@@ -94,158 +97,269 @@ const SettingsScreen = ({ navigation }) => {
     }
   };
 
+  const SettingSection = ({ title, children, icon }) => (
+    <LinearGradient
+      colors={colors.gradient.card}
+      style={[styles.section, SHADOWS.md]}
+    >
+      <View style={styles.sectionHeader}>
+        <Ionicons name={icon} size={24} color={colors.primary} />
+        <Text style={[styles.sectionTitle, { color: colors.text }]}>{title}</Text>
+      </View>
+      {children}
+    </LinearGradient>
+  );
+
+  const SettingItem = ({ label, description, children, icon }) => (
+    <View style={styles.settingItem}>
+      <View style={styles.settingHeader}>
+        {icon && <Ionicons name={icon} size={20} color={colors.accent} style={styles.settingIcon} />}
+        <Text style={[styles.settingLabel, { color: colors.text }]}>{label}</Text>
+      </View>
+      {description && (
+        <Text 
+          style={[styles.settingDescription, { color: colors.textLight }]}
+          numberOfLines={0}
+        >
+          {description}
+        </Text>
+      )}
+      <View style={styles.settingControl}>
+        {children}
+      </View>
+    </View>
+  );
+
   return (
-    <View style={[styles.container, { backgroundColor: colors.background }]}>
-      <View style={[styles.card, { backgroundColor: colors.cardBackground }]}>
-        <Text style={[styles.title, { color: colors.text }]}>Notification Settings</Text>
-        
-        <View style={styles.timeContainer}>
-          <Text style={[styles.label, { color: colors.text }]}>Daily Notification Time</Text>
-          <TouchableOpacity 
-            style={[styles.timeButton, { backgroundColor: colors.primary }]}
-            onPress={showTimePickerModal}
-          >
-            <Text style={[styles.timeButtonText, { color: colors.buttonText }]}>
-              {notificationTime.toLocaleTimeString('en-US', {
-                hour: 'numeric',
-                minute: '2-digit',
-                hour12: true
-              })}
-            </Text>
-          </TouchableOpacity>
-        </View>
-
-        {showTimePicker && (
-          <DateTimePicker
-            value={notificationTime}
-            mode="time"
-            is24Hour={false}
-            display={Platform.OS === 'ios' ? 'spinner' : 'default'}
-            onChange={handleTimeChange}
-          />
-        )}
-
-        <View style={styles.importSection}>
-          <Text style={[styles.label, { color: colors.text }]}>Import Kindle Highlights</Text>
-          <Text style={[styles.helpText, { color: colors.textLight }]}>
-            Select a text file containing your Kindle highlights. Each highlight should be separated by "=========="
+    <LinearGradient colors={colors.gradient.background} style={styles.container}>
+      <SafeAreaView style={styles.safeArea} edges={['top']}>
+        <ScrollView 
+          contentContainerStyle={styles.scrollContent}
+          showsVerticalScrollIndicator={false}
+        >
+        <View style={styles.header}>
+          <Ionicons name="settings" size={32} color={colors.accent} />
+          <Text style={[styles.title, { color: colors.text }]}>Settings</Text>
+          <Text style={[styles.subtitle, { color: colors.textLight }]}>
+            Customize your quote experience
           </Text>
-          <TouchableOpacity 
-            style={[styles.importButton, { backgroundColor: colors.primary }]}
-            onPress={handleImport}
-            disabled={importing}
-          >
-            <Text style={[styles.buttonText, { color: colors.buttonText }]}>
-              {importing ? 'Importing...' : 'Select Highlights File'}
-            </Text>
-          </TouchableOpacity>
         </View>
 
-        <View style={styles.debugSection}>
-          <TouchableOpacity 
-            style={[styles.debugButton, { backgroundColor: colors.primary }]}
-            onPress={checkNextNotification}
+        <SettingSection title="Notifications" icon="notifications">
+          <SettingItem 
+            label="Daily Notification Time"
+            description="Choose when you'd like to receive your daily quote"
+            icon="time"
           >
-            <Text style={[styles.timeButtonText, { color: colors.buttonText }]}>
-              Check Next Notification
-            </Text>
-          </TouchableOpacity>
+            <TouchableOpacity 
+              style={[styles.timeButton, { backgroundColor: colors.primary }]}
+              onPress={showTimePickerModal}
+            >
+              <Ionicons name="time" size={16} color={colors.buttonText} />
+              <Text style={[styles.timeButtonText, { color: colors.buttonText }]}>
+                {notificationTime.toLocaleTimeString('en-US', {
+                  hour: 'numeric',
+                  minute: '2-digit',
+                  hour12: true
+                })}
+              </Text>
+            </TouchableOpacity>
+          </SettingItem>
+
+          {showTimePicker && (
+            <View style={styles.pickerContainer}>
+              <DateTimePicker
+                value={notificationTime}
+                mode="time"
+                is24Hour={false}
+                display={Platform.OS === 'ios' ? 'spinner' : 'default'}
+                onChange={handleTimeChange}
+              />
+            </View>
+          )}
+        </SettingSection>
+
+        <SettingSection title="Library Management" icon="library">
+          <SettingItem 
+            label="Import Kindle Highlights"
+            description="Add your Kindle highlights to expand your quote collection. Select a text file with highlights separated by '=========='."
+            icon="cloud-upload"
+          >
+            <TouchableOpacity 
+              style={[
+                styles.importButton, 
+                { backgroundColor: importing ? colors.textLighter : colors.primary }
+              ]}
+              onPress={handleImport}
+              disabled={importing}
+            >
+              {importing ? (
+                <ActivityIndicator size="small" color={colors.buttonText} />
+              ) : (
+                <Ionicons name="document-text" size={16} color={colors.buttonText} />
+              )}
+              <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                {importing ? 'Importing...' : 'Select File'}
+              </Text>
+            </TouchableOpacity>
+          </SettingItem>
+        </SettingSection>
+
+        <SettingSection title="Debug Information" icon="bug">
+          <SettingItem 
+            label="Check Scheduled Notifications"
+            description="View upcoming notification schedule for troubleshooting"
+            icon="information-circle"
+          >
+            <TouchableOpacity 
+              style={[styles.debugButton, { backgroundColor: colors.accent }]}
+              onPress={checkNextNotification}
+            >
+              <Ionicons name="search" size={16} color={colors.buttonText} />
+              <Text style={[styles.buttonText, { color: colors.buttonText }]}>
+                Check
+              </Text>
+            </TouchableOpacity>
+          </SettingItem>
           
-          {scheduledNotification ? (
-            <View style={styles.notificationInfo}>
-              <ScrollView style={styles.scrollView}>
-                <Text style={[styles.notificationText, { color: colors.text }]}>
+          {scheduledNotification && (
+            <View style={[styles.debugOutput, { backgroundColor: colors.backgroundSecondary }]}>
+              <ScrollView style={styles.debugScrollView} nestedScrollEnabled>
+                <Text style={[styles.debugText, { color: colors.text }]}>
                   {scheduledNotification}
                 </Text>
               </ScrollView>
             </View>
-          ) : null}
-        </View>
-      </View>
-    </View>
+          )}
+        </SettingSection>
+        </ScrollView>
+      </SafeAreaView>
+    </LinearGradient>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    padding: 20,
   },
-  card: {
-    padding: 20,
-    borderRadius: 12,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
+  safeArea: {
+    flex: 1,
+  },
+  scrollContent: {
+    padding: SPACING.lg,
+    paddingBottom: Platform.OS === 'ios' ? 120 : 100,
+  },
+  header: {
+    alignItems: 'center',
+    marginBottom: SPACING['3xl'],
+    paddingTop: SPACING.lg,
   },
   title: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
+    fontSize: TYPOGRAPHY.sizes['3xl'],
+    fontWeight: TYPOGRAPHY.weights.bold,
+    textAlign: 'center',
+    marginTop: SPACING.md,
+    marginBottom: SPACING.xs,
   },
-  timeContainer: {
-    marginBottom: 20,
+  subtitle: {
+    fontSize: TYPOGRAPHY.sizes.lg,
+    fontWeight: TYPOGRAPHY.weights.medium,
+    textAlign: 'center',
   },
-  label: {
-    fontSize: 16,
-    marginBottom: 10,
+  section: {
+    borderRadius: BORDER_RADIUS.xl,
+    padding: SPACING['2xl'],
+    marginBottom: SPACING['2xl'],
+  },
+  sectionHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.lg,
+  },
+  sectionTitle: {
+    fontSize: TYPOGRAPHY.sizes.xl,
+    fontWeight: TYPOGRAPHY.weights.semibold,
+    marginLeft: SPACING.md,
+  },
+  settingItem: {
+    marginBottom: SPACING['2xl'],
+  },
+  settingHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: SPACING.md,
+  },
+  settingIcon: {
+    marginRight: SPACING.sm,
+  },
+  settingLabel: {
+    fontSize: TYPOGRAPHY.sizes.lg,
+    fontWeight: TYPOGRAPHY.weights.semibold,
+    flex: 1,
+  },
+  settingDescription: {
+    fontSize: TYPOGRAPHY.sizes.sm,
+    lineHeight: 20,
+    marginBottom: SPACING.lg,
+    color: 'inherit',
+  },
+  settingControl: {
+    alignItems: 'flex-end',
+    marginTop: SPACING.sm,
   },
   timeButton: {
-    padding: 15,
-    borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    gap: SPACING.sm,
+    ...SHADOWS.sm,
   },
   timeButtonText: {
-    fontSize: 18,
-    fontWeight: 'bold',
+    fontSize: TYPOGRAPHY.sizes.base,
+    fontWeight: TYPOGRAPHY.weights.semibold,
   },
-  importSection: {
-    marginTop: 20,
-    marginBottom: 20,
-  },
-  helpText: {
-    fontSize: 14,
-    marginBottom: 10,
+  pickerContainer: {
+    alignItems: 'center',
+    paddingVertical: SPACING.lg,
   },
   importButton: {
-    padding: 15,
-    borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-  debugSection: {
-    marginTop: 20,
-    padding: 10,
-    flex: 1,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    gap: SPACING.sm,
+    ...SHADOWS.sm,
   },
   debugButton: {
-    padding: 15,
-    borderRadius: 8,
+    flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    paddingVertical: SPACING.md,
+    paddingHorizontal: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    gap: SPACING.sm,
+    ...SHADOWS.sm,
   },
-  notificationInfo: {
-    padding: 10,
-    borderRadius: 8,
-    backgroundColor: '#f5f5f5',
+  buttonText: {
+    fontSize: TYPOGRAPHY.sizes.base,
+    fontWeight: TYPOGRAPHY.weights.semibold,
+  },
+  debugOutput: {
+    marginTop: SPACING.lg,
+    padding: SPACING.lg,
+    borderRadius: BORDER_RADIUS.lg,
+    maxHeight: 200,
+    ...SHADOWS.sm,
+  },
+  debugScrollView: {
     flex: 1,
-    minHeight: 200,
   },
-  scrollView: {
-    flex: 1,
-  },
-  notificationText: {
+  debugText: {
     fontFamily: Platform.OS === 'ios' ? 'Menlo' : 'monospace',
-    fontSize: 12,
-    padding: 5,
+    fontSize: TYPOGRAPHY.sizes.xs,
+    lineHeight: TYPOGRAPHY.lineHeights.snug,
   },
 });
 
