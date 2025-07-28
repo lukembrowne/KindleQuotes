@@ -45,12 +45,17 @@ KindleQuotes/
 
 2. Start the development server:
    ```bash
-   npm start
+   npx expo start
    ```
 
 3. Run on iOS:
    ```bash
-   npm run ios
+   npx expo run:ios
+   ```
+
+4. Run on Android:
+   ```bash
+   npx expo run:android
    ```
 
 ## 📝 Usage
